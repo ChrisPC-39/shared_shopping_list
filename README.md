@@ -1,6 +1,6 @@
-# busteni_shopping_list
+# Shared shopping list
 
-A new Flutter project.
+Simple shared shopping list using Firebase. API keys are not public (make your own firebase_options)
 
 ## Getting Started
 
