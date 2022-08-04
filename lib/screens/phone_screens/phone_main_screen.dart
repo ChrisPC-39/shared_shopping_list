@@ -5,8 +5,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../database/item.dart';
 import '../../firebase_methods/firestore_methods.dart';
 import '../../database/user.dart';
+import 'phone_comment_screen.dart';
 
 class PhoneMainScreen extends StatefulWidget {
   const PhoneMainScreen({Key? key}) : super(key: key);
@@ -81,125 +83,369 @@ class _PhoneMainScreenState extends State<PhoneMainScreen> {
                                       .toLowerCase()
                                       .contains(addItemString.toLowerCase())
                                   ? Container()
-                                  : Padding(
-                                      padding: const EdgeInsets.only(bottom: 10),
-                                      child: InkWell(
-                                        borderRadius: BorderRadius.circular(10),
-                                        onTap: () {
-                                          FirestoreMethods().updateItem(
-                                            uid: item["uid"],
-                                            user: item["user"],
-                                            userColor: item["userColor"],
-                                            item: item["item"],
-                                            itemCount: item["itemCount"],
-                                            date: item["date"].toDate(),
-                                            isChecked: !item["isChecked"],
-                                            votedToDeleteBy:
-                                                item["votedToDeleteBy"],
-                                          );
-                                        },
-                                        onLongPress: () {
-                                          voteToDelete(
-                                            item,
-                                            item["votedToDeleteBy"],
-                                          );
-                                        },
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            border: Border.all(
-                                              color: Color(item["userColor"])
-                                                  .withOpacity(0.5),
-                                            ),
-                                            borderRadius:
-                                                BorderRadius.circular(10),
-                                            color: !item["isChecked"]
-                                                ? ThemeData.dark()
-                                                    .cardColor
-                                                    .withOpacity(0.1)
-                                                : Colors.grey.withOpacity(0.1),
-                                          ),
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
+                                  : Row(
+                                      children: [
+                                        Flexible(
+                                          child: StreamBuilder(
+                                              stream: FirebaseFirestore.instance
+                                                  .collection("items")
+                                                  .doc(item["uid"])
+                                                  .collection("comments")
+                                                  .orderBy("date",
+                                                      descending: true)
+                                                  .snapshots(),
+                                              builder:
+                                                  (context, commentsnapshot) {
+                                                if (commentsnapshot
+                                                            .connectionState ==
+                                                        ConnectionState
+                                                            .waiting ||
+                                                    !commentsnapshot.hasData) {
+                                                  return const Center(
+                                                      child:
+                                                          CircularProgressIndicator());
+                                                }
+
+                                                dynamic comment = 0;
+                                                DateTime commentDate =
+                                                    DateTime(0);
+                                                final numOfComments =
+                                                    (commentsnapshot.data!
+                                                            as dynamic)
+                                                        .docs
+                                                        .length;
+                                                if (numOfComments > 0) {
+                                                  comment = (commentsnapshot
+                                                          .data! as dynamic)
+                                                      .docs[0]
+                                                      .data();
+
+                                                  commentDate =
+                                                      comment["date"].toDate();
+                                                }
+
+                                                return Column(
                                                   children: [
-                                                    Flexible(
-                                                      child: Text(
-                                                        item["user"],
-                                                        style: TextStyle(
-                                                          color: Color(
-                                                            item["userColor"],
-                                                          ),
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    Text(
-                                                      itemDate.hour < 10
-                                                          ? "0"
-                                                          : "" +
-                                                              itemDate.hour
-                                                                  .toString() +
-                                                              ":" +
-                                                              (itemDate.minute <
-                                                                      10
-                                                                  ? "0"
-                                                                  : "") +
-                                                              itemDate.minute
-                                                                  .toString(),
-                                                      style: const TextStyle(
-                                                        color: Colors.grey,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                                const SizedBox(height: 10),
-                                                Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
-                                                  children: [
-                                                    Flexible(
-                                                      child: Text(
-                                                        item["item"],
-                                                        style: TextStyle(
-                                                          fontSize: 20,
-                                                          color: item["isChecked"]
-                                                              ? Colors.grey
-                                                              : Colors.white,
+                                                    Padding(
+                                                      padding: EdgeInsets.only(
+                                                          bottom:
+                                                              numOfComments > 0
+                                                                  ? 0
+                                                                  : 10),
+                                                      child: InkWell(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(10),
+                                                        onTap: () {
+                                                          FirestoreMethods()
+                                                              .updateItem(
+                                                            uid: item["uid"],
+                                                            user: item["user"],
+                                                            userColor: item[
+                                                                "userColor"],
+                                                            item: item["item"],
+                                                            itemCount: item[
+                                                                "itemCount"],
+                                                            date: item["date"]
+                                                                .toDate(),
+                                                            isChecked: !item[
+                                                                "isChecked"],
+                                                            votedToDeleteBy: item[
+                                                                "votedToDeleteBy"],
+                                                          );
+                                                        },
+                                                        onLongPress: () {
+                                                          voteToDelete(
+                                                            item,
+                                                            item[
+                                                                "votedToDeleteBy"],
+                                                          );
+                                                        },
+                                                        child: Container(
                                                           decoration:
-                                                              item["isChecked"]
-                                                                  ? TextDecoration
-                                                                      .lineThrough
-                                                                  : TextDecoration
-                                                                      .none,
+                                                              BoxDecoration(
+                                                            border: Border.all(
+                                                              color: Color(item[
+                                                                      "userColor"])
+                                                                  .withOpacity(
+                                                                      0.5),
+                                                            ),
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        10),
+                                                            color: !item[
+                                                                    "isChecked"]
+                                                                ? ThemeData
+                                                                        .dark()
+                                                                    .cardColor
+                                                                    .withOpacity(
+                                                                        0.1)
+                                                                : Colors.grey
+                                                                    .withOpacity(
+                                                                        0.1),
+                                                          ),
+                                                          child: Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .all(8.0),
+                                                            child: Column(
+                                                              crossAxisAlignment:
+                                                                  CrossAxisAlignment
+                                                                      .start,
+                                                              children: [
+                                                                Row(
+                                                                  mainAxisAlignment:
+                                                                      MainAxisAlignment
+                                                                          .spaceBetween,
+                                                                  children: [
+                                                                    Flexible(
+                                                                      child:
+                                                                          Text(
+                                                                        item[
+                                                                            "user"],
+                                                                        style:
+                                                                            TextStyle(
+                                                                          color:
+                                                                              Color(
+                                                                            item["userColor"],
+                                                                          ),
+                                                                          fontWeight:
+                                                                              FontWeight.bold,
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                    Text(
+                                                                      itemDate.hour <
+                                                                              10
+                                                                          ? "0"
+                                                                          : "" +
+                                                                              itemDate.hour.toString() +
+                                                                              ":" +
+                                                                              (itemDate.minute < 10 ? "0" : "") +
+                                                                              itemDate.minute.toString(),
+                                                                      style:
+                                                                          const TextStyle(
+                                                                        color: Colors
+                                                                            .grey,
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                                const SizedBox(
+                                                                    height: 10),
+                                                                Row(
+                                                                  mainAxisAlignment:
+                                                                      MainAxisAlignment
+                                                                          .spaceBetween,
+                                                                  children: [
+                                                                    Flexible(
+                                                                      child:
+                                                                          Text(
+                                                                        item[
+                                                                            "item"],
+                                                                        style:
+                                                                            TextStyle(
+                                                                          fontSize:
+                                                                              20,
+                                                                          color: item["isChecked"]
+                                                                              ? Colors.grey
+                                                                              : Colors.white,
+                                                                          decoration: item["isChecked"]
+                                                                              ? TextDecoration.lineThrough
+                                                                              : TextDecoration.none,
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                    const SizedBox(
+                                                                        width:
+                                                                            10),
+                                                                    Text(
+                                                                      "x${item["itemCount"]}",
+                                                                      style:
+                                                                          TextStyle(
+                                                                        fontSize:
+                                                                            20,
+                                                                        color: item["isChecked"]
+                                                                            ? Colors.grey
+                                                                            : Colors.white,
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                )
+                                                              ],
+                                                            ),
+                                                          ),
                                                         ),
                                                       ),
                                                     ),
-                                                    const SizedBox(width: 10),
-                                                    Text(
-                                                      "x${item["itemCount"]}",
-                                                      style: TextStyle(
-                                                        fontSize: 20,
-                                                        color: item["isChecked"]
-                                                            ? Colors.grey
-                                                            : Colors.white,
+                                                    Visibility(
+                                                      visible: comment != 0,
+                                                      child: Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                    .only(
+                                                                bottom: 10),
+                                                        child: InkWell(
+                                                          onTap: () =>
+                                                              Navigator.push(
+                                                            context,
+                                                            MaterialPageRoute(
+                                                              builder: (context) =>
+                                                                  PhoneCommentScreen(
+                                                                item: Item(
+                                                                  uid: item[
+                                                                      "uid"],
+                                                                  user: item[
+                                                                      "user"],
+                                                                  userColor: item[
+                                                                      "userColor"],
+                                                                  item: item[
+                                                                      "item"],
+                                                                  itemCount: item[
+                                                                      "itemCount"],
+                                                                  date: item[
+                                                                          "date"]
+                                                                      .toDate(),
+                                                                  isChecked: !item[
+                                                                      "isChecked"],
+                                                                  votedToDeleteBy:
+                                                                      item[
+                                                                          "votedToDeleteBy"],
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(10),
+                                                          child: Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .all(8.0),
+                                                            child: Column(
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .spaceBetween,
+                                                              children: [
+                                                                Row(
+                                                                  children: [
+                                                                    Text(
+                                                                      comment !=
+                                                                              0
+                                                                          ? comment["user"] +
+                                                                              ": "
+                                                                          : "",
+                                                                      style:
+                                                                          TextStyle(
+                                                                        color:
+                                                                            Color(
+                                                                          comment != 0
+                                                                              ? comment["userColor"]
+                                                                              : Colors.red.value,
+                                                                        ),
+                                                                        fontSize:
+                                                                            14,
+                                                                        fontWeight:
+                                                                            FontWeight.bold,
+                                                                      ),
+                                                                    ),
+                                                                    const SizedBox(
+                                                                        width:
+                                                                            5),
+                                                                    Text(
+                                                                      comment !=
+                                                                              0
+                                                                          ? comment[
+                                                                              "comment"]
+                                                                          : "",
+                                                                      style:
+                                                                          const TextStyle(
+                                                                        color: Colors
+                                                                            .white,
+                                                                        fontSize:
+                                                                            14,
+                                                                      ),
+                                                                    ),
+                                                                    const SizedBox(
+                                                                        width:
+                                                                            15),
+                                                                    const Spacer(),
+                                                                    Text(
+                                                                      comment !=
+                                                                              0
+                                                                          ? commentDate.hour < 10
+                                                                              ? "0"
+                                                                              : "" + commentDate.hour.toString() + ":" + (commentDate.minute < 10 ? "0" : "") + commentDate.minute.toString()
+                                                                          : "",
+                                                                      style: const TextStyle(
+                                                                          color: Colors
+                                                                              .grey,
+                                                                          fontSize:
+                                                                              12),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                                const SizedBox(height: 5),
+                                                                Row(
+                                                                  children: [
+                                                                    Text(
+                                                                      "$numOfComments comment(s)",
+                                                                      style:
+                                                                          const TextStyle(
+                                                                        fontSize:
+                                                                            12,
+                                                                        color: Colors
+                                                                            .grey,
+                                                                      ),
+                                                                    ),
+                                                                    const Icon(
+                                                                      Icons
+                                                                          .chevron_right,
+                                                                      color: Colors
+                                                                          .grey,
+                                                                      size: 18,
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        ),
                                                       ),
                                                     ),
                                                   ],
-                                                )
-                                              ],
+                                                );
+                                              }),
+                                        ),
+                                        const SizedBox(width: 5),
+                                        IconButton(
+                                          icon: const Icon(
+                                            Icons.message,
+                                            color: Colors.grey,
+                                          ),
+                                          onPressed: () => Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  PhoneCommentScreen(
+                                                item: Item(
+                                                  uid: item["uid"],
+                                                  user: item["user"],
+                                                  userColor: item["userColor"],
+                                                  item: item["item"],
+                                                  itemCount: item["itemCount"],
+                                                  date: item["date"].toDate(),
+                                                  isChecked: !item["isChecked"],
+                                                  votedToDeleteBy:
+                                                      item["votedToDeleteBy"],
+                                                ),
+                                              ),
                                             ),
                                           ),
+                                          splashRadius: 20,
                                         ),
-                                      ),
+                                      ],
                                     );
                             },
                           );
@@ -216,6 +462,9 @@ class _PhoneMainScreenState extends State<PhoneMainScreen> {
                               addItemString = newVal;
                             }),
                             onSubmitted: (val) {
+                              if(addItemString.isEmpty) {
+                                return;
+                              }
                               submitTextField();
                               FocusScope.of(context).unfocus();
                               setState(() {
@@ -225,12 +474,14 @@ class _PhoneMainScreenState extends State<PhoneMainScreen> {
                             },
                             decoration: InputDecoration(
                               enabledBorder: OutlineInputBorder(
-                                borderSide: BorderSide(color: Color(user.color)),
+                                borderSide:
+                                    BorderSide(color: Color(user.color)),
                                 borderRadius:
                                     const BorderRadius.all(Radius.circular(10)),
                               ),
                               focusedBorder: OutlineInputBorder(
-                                borderSide: BorderSide(color: Color(user.color)),
+                                borderSide:
+                                    BorderSide(color: Color(user.color)),
                                 borderRadius:
                                     const BorderRadius.all(Radius.circular(10)),
                               ),
@@ -239,10 +490,6 @@ class _PhoneMainScreenState extends State<PhoneMainScreen> {
                               labelText: "Item",
                               floatingLabelStyle:
                                   TextStyle(color: Color(user.color)),
-                              // prefixIcon: Icon(
-                              //   Icons.add,
-                              //   color: Color(user.color),
-                              // ),
                             ),
                           ),
                         ),
@@ -282,7 +529,7 @@ class _PhoneMainScreenState extends State<PhoneMainScreen> {
                             splashRadius: 20,
                             icon: const Icon(Icons.send, color: Colors.white),
                             onPressed: () => setState(() {
-                              if(addItemString.isEmpty) {
+                              if (addItemString.isEmpty) {
                                 return;
                               }
 
