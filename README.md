@@ -6,3 +6,4 @@ Simple shared shopping list using Firebase, with no Auth. API keys are not publi
 
 - Fix textfields not starting with capitalization (phone_main_screen and phone_comment_screen)
 - Fix search function not working
+- Delete/Edit comments (?)
