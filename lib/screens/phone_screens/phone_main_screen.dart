@@ -21,7 +21,6 @@ class _PhoneMainScreenState extends State<PhoneMainScreen> {
   final user = Hive.box("user").getAt(0) as User;
 
   int addItemCount = 1;
-  String addItemString = "";
   final TextEditingController addItemController = TextEditingController();
 
   final List<String> hintList = [
@@ -79,9 +78,8 @@ class _PhoneMainScreenState extends State<PhoneMainScreen> {
 
                               final itemDate = item["date"].toDate();
 
-                              return !item["item"]
-                                      .toLowerCase()
-                                      .contains(addItemString.toLowerCase())
+                              return !item["item"].toLowerCase().contains(
+                                      addItemController.text.toLowerCase())
                                   ? Container()
                                   : Row(
                                       children: [
@@ -353,24 +351,31 @@ class _PhoneMainScreenState extends State<PhoneMainScreen> {
                                                                     const SizedBox(
                                                                         width:
                                                                             5),
-                                                                    Text(
-                                                                      comment !=
-                                                                              0
-                                                                          ? comment[
-                                                                              "comment"]
-                                                                          : "",
-                                                                      style:
-                                                                          const TextStyle(
-                                                                        color: Colors
-                                                                            .white,
-                                                                        fontSize:
-                                                                            14,
+                                                                    Flexible(
+                                                                      child:
+                                                                          Text(
+                                                                        comment !=
+                                                                                0
+                                                                            ? comment["comment"]
+                                                                            : "",
+                                                                        style:
+                                                                            const TextStyle(
+                                                                          color:
+                                                                              Colors.white,
+                                                                          fontSize:
+                                                                              14,
+                                                                        ),
+                                                                        maxLines:
+                                                                            1,
+                                                                        overflow:
+                                                                            TextOverflow.fade,
+                                                                        softWrap:
+                                                                            false,
                                                                       ),
                                                                     ),
                                                                     const SizedBox(
                                                                         width:
                                                                             15),
-                                                                    const Spacer(),
                                                                     Text(
                                                                       comment !=
                                                                               0
@@ -378,15 +383,18 @@ class _PhoneMainScreenState extends State<PhoneMainScreen> {
                                                                               ? "0"
                                                                               : "" + commentDate.hour.toString() + ":" + (commentDate.minute < 10 ? "0" : "") + commentDate.minute.toString()
                                                                           : "",
-                                                                      style: const TextStyle(
-                                                                          color: Colors
-                                                                              .grey,
-                                                                          fontSize:
-                                                                              12),
+                                                                      style:
+                                                                          const TextStyle(
+                                                                        color: Colors
+                                                                            .grey,
+                                                                        fontSize:
+                                                                            12,
+                                                                      ),
                                                                     ),
                                                                   ],
                                                                 ),
-                                                                const SizedBox(height: 5),
+                                                                const SizedBox(
+                                                                    height: 5),
                                                                 Row(
                                                                   children: [
                                                                     Text(
@@ -458,19 +466,14 @@ class _PhoneMainScreenState extends State<PhoneMainScreen> {
                         Expanded(
                           child: TextField(
                             controller: addItemController,
-                            onChanged: (newVal) => setState(() {
-                              addItemString = newVal;
-                            }),
                             onSubmitted: (val) {
-                              if(addItemString.isEmpty) {
+                              if (addItemController.text.isEmpty) {
                                 return;
                               }
+
                               submitTextField();
                               FocusScope.of(context).unfocus();
-                              setState(() {
-                                addItemController.clear();
-                                addItemString = "";
-                              });
+                              addItemController.clear();
                             },
                             decoration: InputDecoration(
                               enabledBorder: OutlineInputBorder(
@@ -528,18 +531,17 @@ class _PhoneMainScreenState extends State<PhoneMainScreen> {
                           child: IconButton(
                             splashRadius: 20,
                             icon: const Icon(Icons.send, color: Colors.white),
-                            onPressed: () => setState(() {
-                              if (addItemString.isEmpty) {
+                            onPressed: () {
+                              if (addItemController.text.isEmpty) {
                                 return;
                               }
 
                               submitTextField();
                               FocusScope.of(context).unfocus();
-                              addItemString = "";
                               addItemController.clear();
-                            }),
+                            },
                           ),
-                        )
+                        ),
                       ],
                     ),
                   ],
@@ -638,7 +640,7 @@ class _PhoneMainScreenState extends State<PhoneMainScreen> {
       uid: uid,
       user: user.name,
       userColor: user.color,
-      item: addItemString,
+      item: addItemController.text,
       itemCount: addItemCount,
       date: DateTime.now(),
       isChecked: false,

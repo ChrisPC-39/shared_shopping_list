@@ -17,7 +17,6 @@ class WebCommentScreen extends StatefulWidget {
 }
 
 class _WebCommentScreenState extends State<WebCommentScreen> {
-  String commentString = "";
   final commentController = TextEditingController();
 
   late User user;
@@ -168,7 +167,7 @@ class _WebCommentScreenState extends State<WebCommentScreen> {
 
                             return Padding(
                               padding: const EdgeInsets.all(8.0),
-                              child: Row(
+                              child: Column(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
@@ -185,30 +184,35 @@ class _WebCommentScreenState extends State<WebCommentScreen> {
                                         ),
                                       ),
                                       const SizedBox(width: 5),
-                                      Text(
-                                        comment != 0 ? comment["comment"] : "",
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 14,
+                                      Flexible(
+                                        child: Text(
+                                          comment != 0 ? comment["comment"] : "",
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 14,
+                                          ),
                                         ),
                                       ),
                                     ],
                                   ),
-                                  Text(
-                                    comment != 0
-                                        ? commentDate.hour < 10
-                                            ? "0"
-                                            : "" +
-                                                commentDate.hour.toString() +
-                                                ":" +
-                                                (commentDate.minute < 10
-                                                    ? "0"
-                                                    : "") +
-                                                commentDate.minute.toString()
-                                        : "",
-                                    style: const TextStyle(
-                                      color: Colors.grey,
-                                      fontSize: 12,
+                                  Align(
+                                    alignment: Alignment.centerRight,
+                                    child: Text(
+                                      comment != 0
+                                          ? commentDate.hour < 10
+                                              ? "0"
+                                              : "" +
+                                                  commentDate.hour.toString() +
+                                                  ":" +
+                                                  (commentDate.minute < 10
+                                                      ? "0"
+                                                      : "") +
+                                                  commentDate.minute.toString()
+                                          : "",
+                                      style: const TextStyle(
+                                        color: Colors.grey,
+                                        fontSize: 12,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -226,20 +230,14 @@ class _WebCommentScreenState extends State<WebCommentScreen> {
                     Expanded(
                       child: TextField(
                         controller: commentController,
-                        onChanged: (newVal) => setState(() {
-                          commentString = newVal;
-                        }),
                         onSubmitted: (val) {
-                          if(commentString.isEmpty) {
+                          if(commentController.text.isEmpty) {
                             return;
                           }
 
                           submitTextField();
                           FocusScope.of(context).unfocus();
-                          setState(() {
-                            commentController.clear();
-                            commentString = "";
-                          });
+                          commentController.clear();
                         },
                         decoration: InputDecoration(
                           enabledBorder: OutlineInputBorder(
@@ -272,13 +270,12 @@ class _WebCommentScreenState extends State<WebCommentScreen> {
                         splashRadius: 20,
                         icon: const Icon(Icons.send, color: Colors.white),
                         onPressed: () => setState(() {
-                          if (commentString.isEmpty) {
+                          if (commentController.text.isEmpty) {
                             return;
                           }
 
                           submitTextField();
                           FocusScope.of(context).unfocus();
-                          commentString = "";
                           commentController.clear();
                         }),
                       ),
@@ -301,7 +298,7 @@ class _WebCommentScreenState extends State<WebCommentScreen> {
       uid: widget.item.uid,
       user: user.name,
       userColor: user.color,
-      comment: commentString,
+      comment: commentController.text,
       date: DateTime.now(),
       comuid: comuid,
     );

@@ -21,7 +21,6 @@ class _WebMainScreenState extends State<WebMainScreen> {
   final user = Hive.box("user").getAt(0) as User;
 
   int addItemCount = 1;
-  String addItemString = "";
   final TextEditingController addItemController = TextEditingController();
 
   final List<String> hintList = [
@@ -82,7 +81,7 @@ class _WebMainScreenState extends State<WebMainScreen> {
 
                             return !item["item"]
                                     .toLowerCase()
-                                    .contains(addItemString.toLowerCase())
+                                    .contains(addItemController.text.toLowerCase())
                                 ? Container()
                                 : Row(
                                     children: [
@@ -323,7 +322,7 @@ class _WebMainScreenState extends State<WebMainScreen> {
                                                         padding:
                                                             const EdgeInsets
                                                                 .all(8.0),
-                                                        child: Row(
+                                                        child: Column(
                                                           mainAxisAlignment:
                                                               MainAxisAlignment
                                                                   .spaceBetween,
@@ -356,17 +355,22 @@ class _WebMainScreenState extends State<WebMainScreen> {
                                                                 ),
                                                                 const SizedBox(
                                                                     width: 5),
-                                                                Text(
-                                                                  comment != 0
-                                                                      ? comment[
-                                                                          "comment"]
-                                                                      : "",
-                                                                  style:
-                                                                      const TextStyle(
-                                                                    color: Colors
-                                                                        .white,
-                                                                    fontSize:
-                                                                        14,
+                                                                Flexible(
+                                                                  child: Text(
+                                                                    comment != 0
+                                                                        ? comment[
+                                                                            "comment"]
+                                                                        : "",
+                                                                    style:
+                                                                        const TextStyle(
+                                                                      color: Colors
+                                                                          .white,
+                                                                      fontSize:
+                                                                          14,
+                                                                    ),
+                                                                    maxLines: 1,
+                                                                    overflow: TextOverflow.fade,
+                                                                    softWrap: false,
                                                                   ),
                                                                 ),
                                                                 const SizedBox(
@@ -386,10 +390,11 @@ class _WebMainScreenState extends State<WebMainScreen> {
                                                                       color: Colors
                                                                           .grey,
                                                                       fontSize:
-                                                                          12),
+                                                                          12,),
                                                                 ),
                                                               ],
                                                             ),
+                                                            const SizedBox(height: 5),
                                                             Row(
                                                               children: [
                                                                 Text(
@@ -462,19 +467,13 @@ class _WebMainScreenState extends State<WebMainScreen> {
                     Expanded(
                       child: TextField(
                         controller: addItemController,
-                        onChanged: (newVal) => setState(() {
-                          addItemString = newVal;
-                        }),
                         onSubmitted: (val) {
-                          if(addItemString.isEmpty) {
+                          if(addItemController.text.isEmpty) {
                             return;
                           }
 
                           submitTextField();
-                          setState(() {
-                            addItemController.clear();
-                            addItemString = "";
-                          });
+                          addItemController.clear();
                         },
                         decoration: InputDecoration(
                           enabledBorder: OutlineInputBorder(
@@ -622,7 +621,7 @@ class _WebMainScreenState extends State<WebMainScreen> {
       uid: uid,
       user: user.name,
       userColor: user.color,
-      item: addItemString,
+      item: addItemController.text,
       itemCount: addItemCount,
       date: DateTime.now(),
       isChecked: false,
