@@ -49,7 +49,7 @@ class _WebMainScreenState extends State<WebMainScreen> {
           child: Stack(
             children: [
               SizedBox(
-                width: double.infinity,
+                width: 500,
                 child: Column(
                   children: [
                     Flexible(

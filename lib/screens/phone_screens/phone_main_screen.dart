@@ -41,242 +41,264 @@ class _PhoneMainScreenState extends State<PhoneMainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.fromLTRB(25, 25, 25, 25),
-        child: Align(
-          alignment: Alignment.center,
-          child: Stack(
-            children: [
-              Column(
-                children: [
-                  Flexible(
-                    child: StreamBuilder(
-                      stream: FirebaseFirestore.instance
-                          .collection("items")
-                          .orderBy("date", descending: true)
-                          .snapshots(),
-                      builder: (context, itemsnapshot) {
-                        if (itemsnapshot.connectionState ==
-                                ConnectionState.waiting ||
-                            !itemsnapshot.hasData) {
-                          return const Center(
-                              child: CircularProgressIndicator());
-                        }
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        body: Padding(
+          padding: const EdgeInsets.fromLTRB(25, 25, 25, 25),
+          child: Align(
+            alignment: Alignment.center,
+            child: Stack(
+              children: [
+                Column(
+                  children: [
+                    Flexible(
+                      child: StreamBuilder(
+                        stream: FirebaseFirestore.instance
+                            .collection("items")
+                            .orderBy("date", descending: true)
+                            .snapshots(),
+                        builder: (context, itemsnapshot) {
+                          if (itemsnapshot.connectionState ==
+                                  ConnectionState.waiting ||
+                              !itemsnapshot.hasData) {
+                            return const Center(
+                                child: CircularProgressIndicator());
+                          }
 
-                        return ListView.builder(
-                          physics: const BouncingScrollPhysics(),
-                          itemCount:
-                              (itemsnapshot.data! as dynamic).docs.length,
-                          itemBuilder: (context, index) {
-                            final item = (itemsnapshot.data! as dynamic)
-                                .docs[index]
-                                .data();
+                          return ListView.builder(
+                            physics: const BouncingScrollPhysics(),
+                            itemCount:
+                                (itemsnapshot.data! as dynamic).docs.length,
+                            itemBuilder: (context, index) {
+                              final item = (itemsnapshot.data! as dynamic)
+                                  .docs[index]
+                                  .data();
 
-                            final itemDate = item["date"].toDate();
+                              final itemDate = item["date"].toDate();
 
-                            return !item["item"]
-                                    .toLowerCase()
-                                    .contains(addItemString.toLowerCase())
-                                ? Container()
-                                : Padding(
-                                    padding: const EdgeInsets.only(bottom: 10),
-                                    child: InkWell(
-                                      borderRadius: BorderRadius.circular(10),
-                                      onTap: () {
-                                        FirestoreMethods().updateItem(
-                                          uid: item["uid"],
-                                          user: item["user"],
-                                          userColor: item["userColor"],
-                                          item: item["item"],
-                                          itemCount: item["itemCount"],
-                                          date: item["date"].toDate(),
-                                          isChecked: !item["isChecked"],
-                                          votedToDeleteBy:
-                                              item["votedToDeleteBy"],
-                                        );
-                                      },
-                                      onLongPress: () {
-                                        voteToDelete(
-                                          item,
-                                          item["votedToDeleteBy"],
-                                        );
-                                      },
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          border: Border.all(
-                                            color: Color(item["userColor"])
-                                                .withOpacity(0.5),
+                              return !item["item"]
+                                      .toLowerCase()
+                                      .contains(addItemString.toLowerCase())
+                                  ? Container()
+                                  : Padding(
+                                      padding: const EdgeInsets.only(bottom: 10),
+                                      child: InkWell(
+                                        borderRadius: BorderRadius.circular(10),
+                                        onTap: () {
+                                          FirestoreMethods().updateItem(
+                                            uid: item["uid"],
+                                            user: item["user"],
+                                            userColor: item["userColor"],
+                                            item: item["item"],
+                                            itemCount: item["itemCount"],
+                                            date: item["date"].toDate(),
+                                            isChecked: !item["isChecked"],
+                                            votedToDeleteBy:
+                                                item["votedToDeleteBy"],
+                                          );
+                                        },
+                                        onLongPress: () {
+                                          voteToDelete(
+                                            item,
+                                            item["votedToDeleteBy"],
+                                          );
+                                        },
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            border: Border.all(
+                                              color: Color(item["userColor"])
+                                                  .withOpacity(0.5),
+                                            ),
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                            color: !item["isChecked"]
+                                                ? ThemeData.dark()
+                                                    .cardColor
+                                                    .withOpacity(0.1)
+                                                : Colors.grey.withOpacity(0.1),
                                           ),
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                          color: !item["isChecked"]
-                                              ? ThemeData.dark()
-                                                  .cardColor
-                                                  .withOpacity(0.1)
-                                              : Colors.grey.withOpacity(0.1),
-                                        ),
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: [
-                                                  Flexible(
-                                                    child: Text(
-                                                      item["user"],
-                                                      style: TextStyle(
-                                                        color: Color(
-                                                          item["userColor"],
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: [
+                                                    Flexible(
+                                                      child: Text(
+                                                        item["user"],
+                                                        style: TextStyle(
+                                                          color: Color(
+                                                            item["userColor"],
+                                                          ),
+                                                          fontWeight:
+                                                              FontWeight.bold,
                                                         ),
-                                                        fontWeight:
-                                                            FontWeight.bold,
                                                       ),
                                                     ),
-                                                  ),
-                                                  Text(
-                                                    itemDate.hour < 10
-                                                        ? "0"
-                                                        : "" +
-                                                            itemDate.hour
-                                                                .toString() +
-                                                            ":" +
-                                                            (itemDate.minute <
-                                                                    10
-                                                                ? "0"
-                                                                : "") +
-                                                            itemDate.minute
-                                                                .toString(),
-                                                    style: const TextStyle(
-                                                      color: Colors.grey,
+                                                    Text(
+                                                      itemDate.hour < 10
+                                                          ? "0"
+                                                          : "" +
+                                                              itemDate.hour
+                                                                  .toString() +
+                                                              ":" +
+                                                              (itemDate.minute <
+                                                                      10
+                                                                  ? "0"
+                                                                  : "") +
+                                                              itemDate.minute
+                                                                  .toString(),
+                                                      style: const TextStyle(
+                                                        color: Colors.grey,
+                                                      ),
                                                     ),
-                                                  ),
-                                                ],
-                                              ),
-                                              const SizedBox(height: 10),
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: [
-                                                  Flexible(
-                                                    child: Text(
-                                                      item["item"],
+                                                  ],
+                                                ),
+                                                const SizedBox(height: 10),
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: [
+                                                    Flexible(
+                                                      child: Text(
+                                                        item["item"],
+                                                        style: TextStyle(
+                                                          fontSize: 20,
+                                                          color: item["isChecked"]
+                                                              ? Colors.grey
+                                                              : Colors.white,
+                                                          decoration:
+                                                              item["isChecked"]
+                                                                  ? TextDecoration
+                                                                      .lineThrough
+                                                                  : TextDecoration
+                                                                      .none,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 10),
+                                                    Text(
+                                                      "x${item["itemCount"]}",
                                                       style: TextStyle(
                                                         fontSize: 20,
                                                         color: item["isChecked"]
                                                             ? Colors.grey
                                                             : Colors.white,
-                                                        decoration:
-                                                            item["isChecked"]
-                                                                ? TextDecoration
-                                                                    .lineThrough
-                                                                : TextDecoration
-                                                                    .none,
                                                       ),
                                                     ),
-                                                  ),
-                                                  const SizedBox(width: 10),
-                                                  Text(
-                                                    "x${item["itemCount"]}",
-                                                    style: TextStyle(
-                                                      fontSize: 20,
-                                                      color: item["isChecked"]
-                                                          ? Colors.grey
-                                                          : Colors.white,
-                                                    ),
-                                                  ),
-                                                ],
-                                              )
-                                            ],
+                                                  ],
+                                                )
+                                              ],
+                                            ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                  );
-                          },
-                        );
-                      },
+                                    );
+                            },
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: addItemController,
-                          onChanged: (newVal) => setState(() {
-                            addItemString = newVal;
-                          }),
-                          onSubmitted: (val) {
-                            submitTextField();
-                            setState(() {
-                              addItemController.clear();
-                              addItemString = "";
-                            });
-                          },
-                          decoration: InputDecoration(
-                            enabledBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: Color(user.color)),
-                              borderRadius:
-                                  const BorderRadius.all(Radius.circular(10)),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: BorderSide(color: Color(user.color)),
-                              borderRadius:
-                                  const BorderRadius.all(Radius.circular(10)),
-                            ),
-                            hintText:
-                                hintList[Random().nextInt(hintList.length)],
-                            labelText: "Item",
-                            floatingLabelStyle:
-                                TextStyle(color: Color(user.color)),
-                            prefixIcon: Icon(
-                              Icons.add,
-                              color: Color(user.color),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: addItemController,
+                            onChanged: (newVal) => setState(() {
+                              addItemString = newVal;
+                            }),
+                            onSubmitted: (val) {
+                              submitTextField();
+                              FocusScope.of(context).unfocus();
+                              setState(() {
+                                addItemController.clear();
+                                addItemString = "";
+                              });
+                            },
+                            decoration: InputDecoration(
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(color: Color(user.color)),
+                                borderRadius:
+                                    const BorderRadius.all(Radius.circular(10)),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: BorderSide(color: Color(user.color)),
+                                borderRadius:
+                                    const BorderRadius.all(Radius.circular(10)),
+                              ),
+                              hintText:
+                                  hintList[Random().nextInt(hintList.length)],
+                              labelText: "Item",
+                              floatingLabelStyle:
+                                  TextStyle(color: Color(user.color)),
+                              // prefixIcon: Icon(
+                              //   Icons.add,
+                              //   color: Color(user.color),
+                              // ),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 10),
-                      Row(
-                        children: [
-                          IconButton(
-                            splashRadius: addItemCount == 1 ? 1 : 20,
-                            icon: Icon(
-                              Icons.remove,
-                              color: addItemCount == 1
-                                  ? Colors.grey
-                                  : Colors.white,
+                        const SizedBox(width: 10),
+                        Row(
+                          children: [
+                            IconButton(
+                              splashRadius: addItemCount == 1 ? 1 : 20,
+                              icon: Icon(
+                                Icons.remove,
+                                color: addItemCount == 1
+                                    ? Colors.grey
+                                    : Colors.white,
+                              ),
+                              onPressed: () => setState(() {
+                                if (addItemCount > 1) {
+                                  addItemCount--;
+                                }
+                              }),
                             ),
-                            onPressed: () => setState(() {
-                              if (addItemCount > 1) {
-                                addItemCount--;
-                              }
-                            }),
-                          ),
-                          const SizedBox(width: 5),
-                          Text(addItemCount.toString()),
-                          const SizedBox(width: 5),
-                          IconButton(
+                            const SizedBox(width: 5),
+                            Text(addItemCount.toString()),
+                            const SizedBox(width: 5),
+                            IconButton(
+                              splashRadius: 20,
+                              icon: const Icon(Icons.add),
+                              onPressed: () => setState(() {
+                                addItemCount++;
+                              }),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(width: 10),
+                        CircleAvatar(
+                          backgroundColor: Color(user.color),
+                          child: IconButton(
                             splashRadius: 20,
-                            icon: const Icon(Icons.add),
+                            icon: const Icon(Icons.send, color: Colors.white),
                             onPressed: () => setState(() {
-                              addItemCount++;
+                              if(addItemString.isEmpty) {
+                                return;
+                              }
+
+                              submitTextField();
+                              FocusScope.of(context).unfocus();
+                              addItemString = "";
+                              addItemController.clear();
                             }),
                           ),
-                        ],
-                      )
-                    ],
-                  ),
-                ],
-              ),
-            ],
+                        )
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
